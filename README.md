@@ -47,8 +47,8 @@ To be completed
 - The LLM and the location catalogue are added in later steps.
 
 ## Decisions and assumptions
-- Python 3.13 instead of the guide's 3.12. Reason: it was already installed. Limitation: not the version the guide names.
-- Road data is the Geofabrik Southern Zone extract of India. Reason: it covers Hyderabad and is what the guide suggests. Limitation: a large download, and tile building took about 12 minutes on a laptop with 7.6 GB RAM using Docker limited to 4 GB.
+- Python 3.13.5 is the tested version. Reason: it was already installed and all dependencies work on it. Limitation: older Python versions were not tested.
+- Road data is the Geofabrik Southern Zone extract of India. Reason: it covers Hyderabad and comes from a regularly updated public source. Limitation: a large download, and tile building took about 12 minutes on a laptop with 7.6 GB RAM using Docker limited to 4 GB.
 - The van uses the Valhalla auto profile, so it is treated as a light van with no height or weight restrictions.
 - Valhalla and VROOM run in Docker. VROOM reaches Valhalla through the Compose service name valhalla, not localhost.
 
@@ -63,3 +63,4 @@ No live traffic. Road travel estimates only. One vehicle. No time windows or veh
 
 ## AI usage
 To be completed
+
