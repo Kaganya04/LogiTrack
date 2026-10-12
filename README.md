@@ -17,7 +17,7 @@ Tested on Windows with Git 2.56.0, Node v22.14.0, npm 10.9.2, Python 3.13.5 and 
     copy .env.example .env
     copy backend\.env.example backend\.env
 
-Then open `backend\.env` and set `GEMINI_API_KEY` to your own key and `GEMINI_MODEL` to a model your key can use (tested with gemini-3.5-flash-lite). Never commit `backend\.env`.
+Then open `backend\.env` and set `GEMINI_API_KEY` to your own key and `GEMINI_MODEL` to a model your key can use (tested with gemini-3.5-flash and gemini-3.5-flash-lite). Never commit `backend\.env`.
 
 **2. Road engines** (Docker Desktop must be running)
 
@@ -89,6 +89,7 @@ API:
 - **Python 3.13.5** is the tested version.
 - **Model choice.** Two model names that appeared in the account's model list returned 404 when called, so a model was chosen by testing it directly. Model availability and free quotas change, so check what your key can use.
 - **Logging** records the request id, endpoint, status, duration and outcome. It does not record API keys or raw address text.
+- **Pinned Valhalla image.** compose.yaml pins the Valhalla image by digest, the same image used to build the tiles for the tests recorded here. Limitation: the tiles are built on first start, and the time varies by machine.
 
 ## Coding standards
 Descriptive names, snake_case in Python and PascalCase for React components. Pydantic schemas at the API boundary. Small functions. External calls (VROOM, the model) are isolated so the cleaning and validation code can be tested without them. No secrets in source code, and the API key stays on the backend.
@@ -111,7 +112,7 @@ Run from `backend` with the environment active:
 ## AI usage
 AI tools were used in two different ways.
 
-**In the application:** the app calls a Gemini model (gemini-3.5-flash-lite when tested) to extract address text from delivery lines. Its output is validated before use, and the model never provides coordinates.
+**In the application:** the app calls a Gemini model (tested with gemini-3.5-flash and gemini-3.5-flash-lite) to extract address text from delivery lines. Its output is validated before use, and the model never provides coordinates.
 
 **In development:** I used Claude (Anthropic) as an assistant while building this project: for planning the architecture, drafting backend and React code, debugging setup and runtime problems, and explaining concepts. It touched most files in the repository.
 
@@ -120,4 +121,6 @@ What I did myself and checked:
 - I ran the automated tests and the live engine checks, and I tested the app in the browser, including invalid input, a misspelled address, an unsupported time instruction, editing after review, a stopped backend and a model quota error. The results are in `docs/test-results.md`.
 - I debugged real problems on my machine: a port conflict from an old server, a model name that returned 404, ignored files that were not being excluded, and lint errors.
 - I chose which model to use after testing which ones my key could call.
+
+I also used Claude Code at the end for small cleanups: removing unused template files and pinning the Valhalla image. I reviewed and approved each change and ran lint and build myself.
 
