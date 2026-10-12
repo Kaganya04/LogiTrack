@@ -1,0 +1,11 @@
+[
+  {"id": "hitec_hub", "name": "HITEC City hub", "aliases": ["hitec city hub"], "lat": 17.447, "lng": 78.376},
+  {"id": "madhapur", "name": "Madhapur", "aliases": ["madhapur", "madhapur hyderabad"], "lat": 17.448, "lng": 78.391},
+  {"id": "kondapur", "name": "Kondapur", "aliases": ["kondapur", "kondapur hyderabad"], "lat": 17.462, "lng": 78.357},
+  {"id": "gachibowli", "name": "Gachibowli", "aliases": ["gachibowli", "gachibowli hyderabad"], "lat": 17.440, "lng": 78.365},
+  {"id": "jubilee_hills", "name": "Jubilee Hills", "aliases": ["jubilee hills", "jubilee hills hyderabad"], "lat": 17.440, "lng": 78.400},
+  {"id": "ayyappa_society", "name": "Ayyappa Society", "aliases": ["ayyappa society", "ayyappa society hyderabad"], "lat": 17.460, "lng": 78.385},
+  {"id": "kavuri_hills", "name": "Kavuri Hills", "aliases": ["kavuri hills", "kavuri hills hyderabad"], "lat": 17.455, "lng": 78.405},
+  {"id": "botanical_garden", "name": "Botanical Garden area", "aliases": ["botanical garden", "botanical garden hyderabad"], "lat": 17.450, "lng": 78.355},
+  {"id": "banjara_hills", "name": "Banjara Hills", "aliases": ["banjara hills", "banjara hills hyderabad"], "lat": 17.465, "lng": 78.395}
+]
