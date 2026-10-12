@@ -1,0 +1,20 @@
+services:
+  valhalla:
+    image: ghcr.io/valhalla/valhalla-scripted:latest
+    ports:
+      - "127.0.0.1:8002:8002"
+    volumes:
+      - ./infra/valhalla-data:/custom_files
+    environment:
+      tile_urls: ${OSM_PBF_URL:?Set OSM_PBF_URL in root .env}
+      server_threads: "2"
+  vroom:
+    image: ghcr.io/vroom-project/vroom-docker:v1.15.0
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./infra/vroom-conf:/conf
+    environment:
+      VROOM_ROUTER: valhalla
+    depends_on:
+      - valhalla
