@@ -19,3 +19,4 @@
 | 2026-10-12 | 709531c | Browser: Review while the backend is stopped | Readable error, no blank page | Readable error shown, page still usable | PASS |
 | 2026-10-12 | f157ccf | Frontend: npm run lint | No errors | No output after eslint, no errors | PASS |
 | 2026-10-12 | f157ccf | Frontend: npm run build | Build succeeds | built in 241ms, 21 modules | PASS |
+| 2026-10-12 | d6769ee | Clean install: fresh clone of develop, backend install, pytest, npm ci, lint, build | Tests pass, lint and build succeed, no .env files in the repository | Backend and frontend checks passed, no .env files found | PASS |

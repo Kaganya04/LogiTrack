@@ -121,4 +121,3 @@ What I did myself and checked:
 - I debugged real problems on my machine: a port conflict from an old server, a model name that returned 404, ignored files that were not being excluded, and lint errors.
 - I chose which model to use after testing which ones my key could call.
 
-[Edit this section so every sentence is true for you, and be ready to explain any file in the repository.]
