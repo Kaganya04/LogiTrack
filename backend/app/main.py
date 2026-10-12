@@ -3,6 +3,7 @@ import logging
 from fastapi import FastAPI, HTTPException
 
 from app.llm import LLMError, extract_deliveries
+from app.locations import load_locations
 from app.preprocessing import clean_text
 from app.routing import RoutingError, optimize_deliveries
 from app.schemas import (
@@ -50,3 +51,12 @@ def optimize(request: OptimizeRequest):
         raise HTTPException(status_code=422, detail=str(error))
     except RoutingError as error:
         raise HTTPException(status_code=503, detail=str(error))
+
+
+@app.get("/api/locations")
+def locations():
+    """List the supported demo locations for the form."""
+    return [
+        {"id": item["id"], "name": item["name"]}
+        for item in load_locations().values()
+    ]
