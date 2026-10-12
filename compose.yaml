@@ -1,6 +1,6 @@
 services:
   valhalla:
-    image: ghcr.io/valhalla/valhalla-scripted:latest
+    image: ghcr.io/valhalla/valhalla-scripted@sha256:5d571a3e4c3b9ece838359fbaa12995ef70508093354c1685228fe35f841499d
     ports:
       - "127.0.0.1:8002:8002"
     volumes:
