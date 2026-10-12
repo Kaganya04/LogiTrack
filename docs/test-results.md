@@ -17,3 +17,5 @@
 | 2026-10-12 | 709531c | Browser: Review when the Gemini quota is reached | Readable error shown, no key or stack trace | 'The language model quota was reached. Try again later.' shown | PASS |
 | 2026-10-12 | 709531c | Browser: 8 stops, open trip, real Gemini extraction | All 8 recognized, every ID once | All 8 recognized, order D1 D4 D6 D8 D5 D2 D3 D7, 29.5 km, 87 min | PASS |
 | 2026-10-12 | 709531c | Browser: Review while the backend is stopped | Readable error, no blank page | Readable error shown, page still usable | PASS |
+| 2026-10-12 | f157ccf | Frontend: npm run lint | No errors | No output after eslint, no errors | PASS |
+| 2026-10-12 | f157ccf | Frontend: npm run build | Build succeeds | built in 241ms, 21 modules | PASS |
