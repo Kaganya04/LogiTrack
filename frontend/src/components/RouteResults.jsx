@@ -1,7 +1,16 @@
+import { shortPlaceName } from '../placeName'
+
 export default function RouteResults({ route, depotName, parsed }) {
   const names = {}
+  const fullNames = {}
   parsed.deliveries.forEach((item) => {
-    names[item.id] = item.display_address || item.original_text
+    const name = item.display_address || item.original_text
+    if (item.source === 'geocoded') {
+      names[item.id] = `${shortPlaceName(name)} (approximate)`
+      fullNames[item.id] = name
+    } else {
+      names[item.id] = name
+    }
   })
 
   return (
@@ -10,7 +19,7 @@ export default function RouteResults({ route, depotName, parsed }) {
       <ol>
         <li>Start: {depotName}</li>
         {route.ordered_delivery_ids.map((id) => (
-          <li key={id}>
+          <li key={id} title={fullNames[id]}>
             {id}: {names[id]}
           </li>
         ))}

@@ -8,7 +8,8 @@ from app.locations import get_location
 logger = logging.getLogger("logitrack.routing")
 
 ASSUMPTIONS = [
-    "Fixed demo coordinates, not verified customer addresses.",
+    "Catalogue stops use approximate demo coordinates and geocoded stops use "
+    "approximate OpenStreetMap matches. Neither is a verified customer address.",
     "Road-based travel estimates for one light van (auto profile).",
     "No live traffic, waiting time or service time.",
 ]
@@ -66,7 +67,8 @@ def parse_vroom_response(data, job_to_delivery):
 def optimize_deliveries(depot_id, deliveries, return_to_depot):
     """Order the deliveries for one van using VROOM with Valhalla road costs.
 
-    deliveries is a list of dicts with "id" and "location_id".
+    deliveries is a list of dicts with "id" and either "location_id" or "lat" and
+    "lng" (already checked against the Hyderabad box by the request schema).
     Raises ValueError for unknown ids and RoutingError for engine problems.
     """
     depot = get_location(depot_id)
@@ -75,6 +77,9 @@ def optimize_deliveries(depot_id, deliveries, return_to_depot):
 
     resolved = []
     for delivery in deliveries:
+        if delivery.get("location_id") is None:
+            resolved.append((delivery["id"], {"lat": delivery["lat"], "lng": delivery["lng"]}))
+            continue
         location = get_location(delivery["location_id"])
         if location is None:
             raise ValueError(f"Unknown location: {delivery['location_id']}")

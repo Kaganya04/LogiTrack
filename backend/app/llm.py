@@ -1,12 +1,21 @@
 import logging
+import re
 
 from pydantic import ValidationError
 
 from app import config
+from app.geocoding import GeocodingError, geocode
 from app.locations import get_location, resolve_address
-from app.schemas import LLMExtraction
+from app.schemas import ExtractedDelivery, LLMExtraction
 
 logger = logging.getLogger("logitrack.llm")
+
+STUB_NOTE = "Simulated model response (stub mode), not a real Gemini answer."
+TIME_NOTE = "Scheduling and time constraints are not supported in this version."
+_DELIVER_PREFIX = re.compile(r"^\s*deliver\s+(?:to|at)\s+", re.IGNORECASE)
+_TIME_WORDS = re.compile(
+    r"\b(?:before|after|by|deadline|window)\b|(?:\b|\d)(?:am|pm)\b", re.IGNORECASE
+)
 
 SYSTEM_INSTRUCTION = (
     "You extract delivery addresses for a logistics app. You are given delivery IDs "
@@ -43,8 +52,36 @@ def _is_placeholder(value):
     return not value or value.startswith("replace_with")
 
 
+def _between(prompt, tag):
+    start = prompt.find(f"<{tag}>\n")
+    end = prompt.find(f"\n</{tag}>", start)
+    if start == -1 or end == -1:
+        return ""
+    return prompt[start + len(tag) + 3 : end]
+
+
+def stub_reply(prompt):
+    """Development only: build a reply in the model's shape from the prompt itself."""
+    deliveries = []
+    for line in _between(prompt, "deliveries").splitlines():
+        delivery_id, separator, text = line.partition(": ")
+        if separator:
+            address = _DELIVER_PREFIX.sub("", text).strip()
+            deliveries.append(ExtractedDelivery(id=delivery_id, address_text=address))
+
+    clarifications = [STUB_NOTE]
+    instructions = _between(prompt, "instructions")
+    if instructions != "(none)" and _TIME_WORDS.search(instructions):
+        clarifications.append(TIME_NOTE)
+
+    logger.warning("LLM stub mode is ON: simulated reply for %d deliveries", len(deliveries))
+    return LLMExtraction(deliveries=deliveries, clarifications=clarifications).model_dump_json()
+
+
 def call_model(prompt):
     """Send the prompt to Gemini and return the JSON text it produced."""
+    if config.LLM_STUB:
+        return stub_reply(prompt)
     if _is_placeholder(config.GEMINI_API_KEY) or _is_placeholder(config.GEMINI_MODEL):
         raise LLMError("The language model is not configured.")
 
@@ -85,8 +122,10 @@ def call_model(prompt):
 def extract_deliveries(deliveries, instructions=""):
     """Extract address text with the model, check it, then resolve each address.
 
-    deliveries is a list of dicts with "id" and "text". The model never supplies
-    coordinates. Raises LLMError when the model fails or breaks the rules.
+    Each address is matched against the catalogue first; only unmatched ones go
+    to the geocoder. deliveries is a list of dicts with "id" and "text". The model
+    never supplies coordinates. Raises LLMError when the model fails or breaks
+    the rules. A geocoder failure only adds clarification notes.
     """
     raw = call_model(build_prompt(deliveries, instructions))
 
@@ -105,27 +144,53 @@ def extract_deliveries(deliveries, instructions=""):
     by_id = {d.id: d for d in extraction.deliveries}
     clarifications = list(extraction.clarifications)
     parsed = []
+    geocoder_down = False
     for delivery in deliveries:
         address = by_id[delivery["id"]].address_text.strip()
         location_id = resolve_address(address)
         location = get_location(location_id) if location_id else None
-        if location is None:
-            clarifications.append(
-                f"Delivery {delivery['id']} could not be matched to a supported location."
-            )
+        match = None
+        if location is None and address and not geocoder_down:
+            try:
+                match = geocode(address)
+            except GeocodingError:
+                geocoder_down = True
+
+        if location is not None:
+            source, lat, lng, display = "catalogue", location["lat"], location["lng"], location["name"]
+        elif match is not None:
+            source, lat, lng = "geocoded", match["lat"], match["lng"]
+            display = match["display_name"] or address
+        else:
+            location_id = None
+            source, lat, lng, display = "none", None, None, None
+            if geocoder_down:
+                clarifications.append(
+                    f"Delivery {delivery['id']} could not be located because the address "
+                    "lookup service is unavailable. Try again later."
+                )
+            else:
+                clarifications.append(
+                    f"Delivery {delivery['id']} could not be found in Hyderabad. Check the address."
+                )
         parsed.append(
             {
                 "id": delivery["id"],
                 "original_text": delivery["text"],
                 "extracted_address": address,
                 "location_id": location_id,
-                "display_address": location["name"] if location else None,
+                "display_address": display,
+                "source": source,
+                "lat": lat,
+                "lng": lng,
             }
         )
 
     logger.info(
-        "Parsed %d deliveries, %d unresolved",
+        "Parsed %d deliveries: %d catalogue, %d geocoded, %d unresolved",
         len(parsed),
-        sum(1 for p in parsed if p["location_id"] is None),
+        sum(1 for p in parsed if p["source"] == "catalogue"),
+        sum(1 for p in parsed if p["source"] == "geocoded"),
+        sum(1 for p in parsed if p["source"] == "none"),
     )
     return {"deliveries": parsed, "clarifications": clarifications}
