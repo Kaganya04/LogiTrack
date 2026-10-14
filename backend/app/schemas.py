@@ -1,10 +1,29 @@
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, model_validator
+
+from app.geocoding import inside_hyderabad
 
 
 class DeliveryIn(BaseModel):
+    """A confirmed stop: either a catalogue location_id, or lat and lng together."""
+
     model_config = ConfigDict(extra="forbid")
     id: str = Field(min_length=1, max_length=20)
-    location_id: str = Field(min_length=1, max_length=50)
+    location_id: str | None = Field(default=None, min_length=1, max_length=50)
+    lat: float | None = Field(default=None, allow_inf_nan=False)
+    lng: float | None = Field(default=None, allow_inf_nan=False)
+
+    @model_validator(mode="after")
+    def exactly_one_location_form(self):
+        has_coordinates = self.lat is not None
+        if has_coordinates != (self.lng is not None):
+            raise ValueError("lat and lng must be sent together")
+        if has_coordinates == (self.location_id is not None):
+            raise ValueError("Send either location_id or lat and lng, not both")
+        if has_coordinates and not inside_hyderabad(self.lat, self.lng):
+            raise ValueError("Coordinates must be inside the Hyderabad area")
+        return self
 
 
 class OptimizeRequest(BaseModel):
@@ -67,6 +86,9 @@ class ParsedDelivery(BaseModel):
     extracted_address: str
     location_id: str | None
     display_address: str | None
+    source: Literal["catalogue", "geocoded", "none"] = "none"
+    lat: float | None = None
+    lng: float | None = None
 
 
 class ParseResponse(BaseModel):

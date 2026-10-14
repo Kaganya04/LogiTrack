@@ -5,6 +5,7 @@ import uuid
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
+from app import config
 from app.llm import LLMError, extract_deliveries
 from app.locations import load_locations
 from app.logging_config import request_id_var, setup_logging
@@ -19,6 +20,8 @@ from app.schemas import (
 
 setup_logging()
 logger = logging.getLogger("logitrack.api")
+if config.LLM_STUB:
+    logger.warning("LLM stub mode is ON")
 
 app = FastAPI(title="LogiTrack")
 
@@ -65,7 +68,7 @@ def locations():
 
 @app.post("/api/parse", response_model=ParseResponse)
 def parse(request: ParseRequest):
-    """Extract delivery addresses from free text and resolve them to the catalogue."""
+    """Extract delivery addresses from free text and resolve them (catalogue, then geocoder)."""
     logger.info("parse requested: %d deliveries", len(request.deliveries))
     deliveries = []
     for delivery in request.deliveries:

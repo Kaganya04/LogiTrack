@@ -14,6 +14,8 @@ class RequestIdFilter(logging.Filter):
 
 def setup_logging():
     """Send all logitrack.* logs to the console with a request id."""
+    # httpx logs full request URLs at INFO, and geocoding URLs contain addresses.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     logger = logging.getLogger("logitrack")
     if logger.handlers:
         return

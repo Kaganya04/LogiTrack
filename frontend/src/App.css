@@ -197,9 +197,18 @@ tbody tr:last-child td {
 }
 
 td.ok,
-td.bad {
+td.bad,
+td.approx {
   font-weight: 700;
   white-space: nowrap;
+}
+
+td.approx {
+  color: #b45309;
+}
+
+td.approx::before {
+  content: "~  ";
 }
 
 td.ok {
@@ -283,6 +292,17 @@ td.bad::before {
   color: #fff;
   background: var(--accent);
   border-radius: 8px;
+}
+
+.attribution {
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.attribution a {
+  color: var(--accent-dark);
 }
 
 @media (max-width: 860px) {

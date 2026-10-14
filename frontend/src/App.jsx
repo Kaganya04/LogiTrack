@@ -76,10 +76,11 @@ export default function App() {
       const result = await optimizeRoute({
         depot_id: depotId,
         return_to_depot: returnToDepot,
-        deliveries: parsed.deliveries.map((item) => ({
-          id: item.id,
-          location_id: item.location_id,
-        })),
+        deliveries: parsed.deliveries.map((item) =>
+          item.source === 'catalogue'
+            ? { id: item.id, location_id: item.location_id }
+            : { id: item.id, lat: item.lat, lng: item.lng },
+        ),
       })
       setRoute(result)
     } catch (problem) {
@@ -89,7 +90,9 @@ export default function App() {
     }
   }
 
-  const allResolved = parsed !== null && parsed.deliveries.every((item) => item.location_id)
+  const allResolved =
+    parsed !== null &&
+    parsed.deliveries.every((item) => item.source === 'catalogue' || item.source === 'geocoded')
   const notesDone = parsed !== null && (parsed.clarifications.length === 0 || acknowledged)
   const canOptimize = allResolved && notesDone
   const depot = locations.find((item) => item.id === depotId)
@@ -98,8 +101,9 @@ export default function App() {
     <main className="page">
       <h1>LogiTrack</h1>
       <p className="scope">
-        One delivery van, one depot and up to 8 stops. Only a catalogue of approximate demo
-        locations in Hyderabad is supported. No live traffic, time windows or vehicle capacity.
+        One delivery van, one depot and up to 8 stops in Hyderabad. Addresses are matched to a
+        catalogue of demo locations first, then looked up on OpenStreetMap; looked-up points are
+        approximate. No live traffic, time windows or vehicle capacity.
       </p>
 
       {error && (
@@ -148,6 +152,14 @@ export default function App() {
           )}
         </div>
       </div>
+
+      <footer className="attribution">
+        Address search and road data ©{' '}
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+          OpenStreetMap contributors
+        </a>
+        , available under the Open Database License.
+      </footer>
     </main>
   )
 }

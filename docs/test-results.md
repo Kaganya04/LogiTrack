@@ -20,3 +20,5 @@
 | 2026-10-12 | f157ccf | Frontend: npm run lint | No errors | No output after eslint, no errors | PASS |
 | 2026-10-12 | f157ccf | Frontend: npm run build | Build succeeds | built in 241ms, 21 modules | PASS |
 | 2026-10-12 | d6769ee | Clean install: fresh clone of develop, backend install, pytest, npm ci, lint, build | Tests pass, lint and build succeed, no .env files in the repository | Backend and frontend checks passed, no .env files found | PASS |
+| 2026-10-13 | b1fd1b2 | Browser (model simulated, stub mode): shortened place names for geocoded stops | Short names shown, full name in tooltip, approximate label kept | Short names shown in review and route, approximate labels kept | PASS |
+| 2026-10-14 | b1fd1b2 | Browser, real model (gemini-3.5-flash-lite): Madhapur, Hitec City Metro Station, Charminar, round trip | One catalogue and two geocoded stops, each once, approximate labels, no simulated-model note | All three stops once, geocoded ones marked approximate, 42.7 km, 93 min | PASS |
